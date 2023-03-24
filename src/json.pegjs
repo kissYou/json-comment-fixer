@@ -16,14 +16,14 @@
 // ----- 2. JSON Grammar -----
 
 JSON_text
-  = ws value:value ws { return value; }
+  = __ value:value __ { return value; }
 
-begin_array     = ws "[" ws
-begin_object    = ws "{" ws
-end_array       = ws "]" ws
-end_object      = ws "}" ws
-name_separator  = ws ":" ws
-value_separator = ws "," ws
+begin_array     = __ "[" __
+begin_object    = __ "{" __
+end_array       = __ "]" __
+end_object      = __ "}" __
+name_separator  = __ ":" __
+value_separator = __ "," __
 
 ws "whitespace" = [ \t\n\r]*
 
@@ -51,11 +51,9 @@ object
       tail:(value_separator m:member { return m; })*
       {
         var result = {};
-
         [head].concat(tail).forEach(function(element) {
           result[element.name] = element.value;
         });
-
         return result;
       }
     )?
@@ -148,3 +146,44 @@ unescaped
 // See RFC 4234, Appendix B (http://tools.ietf.org/html/rfc4234).
 DIGIT  = [0-9]
 HEXDIG = [0-9a-f]i
+
+SourceCharacter
+  = .
+
+WhiteSpace "whitespace"
+  = "\t"
+  / "\v"
+  / "\f"
+  / " "
+  / "\u00A0"
+  / "\uFEFF"
+  / Zs
+
+LineTerminator
+  = [\n\r\u2028\u2029]
+
+LineTerminatorSequence "end of line"
+  = "\n"
+  / "\r\n"
+  / "\r"
+  / "\u2028"
+  / "\u2029"
+
+Comment "comment"
+  = MultiLineComment
+  / SingleLineComment
+
+MultiLineComment
+  = "/*" (!"*/" SourceCharacter)* "*/"
+
+MultiLineCommentNoLineTerminator
+  = "/*" (!("*/" / LineTerminator) SourceCharacter)* "*/"
+
+SingleLineComment
+  = "//" (!LineTerminator SourceCharacter)*
+
+__
+  = (WhiteSpace / LineTerminatorSequence / Comment)*
+
+  // Separator, Space
+Zs = [\u0020\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000]

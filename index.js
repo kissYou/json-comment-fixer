@@ -31,9 +31,17 @@ const doubleCheck = (data, options = {}) => {
   /* eslint-enable no-console */
 };
 
-const extraChar = (err) => err.expected[0].type === 'other' && ['}', ']'].includes(err.found);
+const extraChar = (err) => {
+  err.expected = err.expected.filter(
+    (e) => !['whitespace', 'end of line', 'comment'].includes(e.description)
+  );
+  return err.expected[0].type === 'other' && ['}', ']'].includes(err.found);
+};
 
 const trailingChar = (err) => {
+  err.expected = err.expected.filter(
+    (e) => !['whitespace', 'end of line', 'comment'].includes(e.description)
+  );
   const literal = err.expected[0].type === 'literal' && err.expected[0].text !== ':';
   return ['.', ',', 'x', 'b', 'o'].includes(err.found) && literal;
 };
